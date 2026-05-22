@@ -1,5 +1,7 @@
 import { useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { listingsApi } from "@/api/listings";
+import { AxiosError } from "axios";
 
 interface DraftResult {
   draft_id: string;
@@ -18,6 +20,7 @@ const PROGRESS_MESSAGES = [
 ];
 
 export default function NewListing() {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     description: "",
     price: "",
@@ -25,7 +28,6 @@ export default function NewListing() {
     listing_type_id: "gold_special",
     available_quantity: "1",
   });
-  const [draft, setDraft] = useState<DraftResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [progressIndex, setProgressIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -57,9 +59,17 @@ export default function NewListing() {
       formData.append("available_quantity", form.available_quantity);
 
       const response = await listingsApi.generate(formData);
-      setDraft(response.data);
-    } catch (err: any) {
-      setError(err.response?.data?.detail || "Something went wrong");
+      const draft = response.data as DraftResult;
+
+      // Navigate to preview — pass draft as router state, no inline rendering
+      navigate("/listings/preview", { state: { draft } });
+    } catch (err: unknown) {
+      if (err instanceof AxiosError) {
+        const detail = err.response?.data?.detail as unknown;
+        setError(typeof detail === "string" ? detail : "Something went wrong");
+      } else {
+        setError("Something went wrong");
+      }
     } finally {
       stopProgress();
       setLoading(false);
@@ -104,17 +114,6 @@ export default function NewListing() {
       </button>
 
       {error && <p>{error}</p>}
-
-      {draft && (
-        <div>
-          <p>Draft ID: {draft.draft_id}</p>
-          <p>Title: {draft.title}</p>
-          <p>Description: {draft.description}</p>
-          <p>
-            Category: {draft.category_name} ({draft.category_id})
-          </p>
-        </div>
-      )}
     </div>
   );
 }
