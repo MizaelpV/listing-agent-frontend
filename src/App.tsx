@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "@/pages/Login";
 import AuthCallback from "@/pages/AuthCallback";
+import NewListing from "@/pages/NewListing";
 
 export default function App() {
   return (
@@ -8,6 +9,7 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/listings/new" element={<NewListing />} />
         <Route path="/" element={<div>Dashboard (coming soon)</div>} />
       </Routes>
     </BrowserRouter>
