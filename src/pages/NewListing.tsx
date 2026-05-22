@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { listingsApi } from "@/api/listings";
 
 interface DraftResult {
@@ -8,6 +8,14 @@ interface DraftResult {
   category_id: string;
   category_name: string;
 }
+
+const PROGRESS_MESSAGES = [
+  "Analyzing your product...",
+  "Searching for the best category...",
+  "Writing your title...",
+  "Crafting your description...",
+  "Almost ready...",
+];
 
 export default function NewListing() {
   const [form, setForm] = useState({
@@ -19,11 +27,27 @@ export default function NewListing() {
   });
   const [draft, setDraft] = useState<DraftResult | null>(null);
   const [loading, setLoading] = useState(false);
+  const [progressIndex, setProgressIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const startProgress = () => {
+    setProgressIndex(0);
+    intervalRef.current = setInterval(() => {
+      setProgressIndex((prev) =>
+        prev < PROGRESS_MESSAGES.length - 1 ? prev + 1 : prev,
+      );
+    }, 4000);
+  };
+
+  const stopProgress = () => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+  };
 
   const handleSubmit = async () => {
     setLoading(true);
     setError(null);
+    startProgress();
     try {
       const formData = new FormData();
       formData.append("description", form.description);
@@ -37,6 +61,7 @@ export default function NewListing() {
     } catch (err: any) {
       setError(err.response?.data?.detail || "Something went wrong");
     } finally {
+      stopProgress();
       setLoading(false);
     }
   };
@@ -75,7 +100,7 @@ export default function NewListing() {
         }
       />
       <button onClick={handleSubmit} disabled={loading}>
-        {loading ? "Generating..." : "Generate Listing"}
+        {loading ? PROGRESS_MESSAGES[progressIndex] : "Generate Listing"}
       </button>
 
       {error && <p>{error}</p>}
