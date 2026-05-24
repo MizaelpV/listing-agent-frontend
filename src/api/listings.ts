@@ -39,6 +39,7 @@ interface PublishOverrides {
   title?: string;
   description?: string;
   attributes?: FilledAttribute[];
+  pictures?: string[]; // R2 public URLs
 }
 
 export interface FilledAttribute {

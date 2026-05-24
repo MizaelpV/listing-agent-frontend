@@ -14,6 +14,7 @@ interface Draft {
   category_id: string;
   category_name?: string;
   required_attributes: MeliAttribute[];
+  image_urls: string[];
 }
 
 interface LocationState {
@@ -90,6 +91,7 @@ function ListingPreviewForm({ draft }: { draft: Draft }) {
         title,
         description,
         attributes: buildFilledAttributes(),
+        pictures: draft.image_urls.length > 0 ? draft.image_urls : undefined,
       });
       navigate("/listings/success", {
         state: {
@@ -118,8 +120,6 @@ function ListingPreviewForm({ draft }: { draft: Draft }) {
     }
   }
 
-  console.log("required_attributes", draft.required_attributes);
-
   return (
     <div className="max-w-2xl mx-auto p-6 space-y-6">
       <div className="flex items-center gap-3">
@@ -140,6 +140,25 @@ function ListingPreviewForm({ draft }: { draft: Draft }) {
           {draft.category_name ?? draft.category_id}
         </p>
       </div>
+
+      {draft.image_urls.length > 0 && (
+        <div>
+          <label className="block text-sm font-medium text-gray-600 mb-2">
+            Imágenes ({draft.image_urls.length})
+          </label>
+          <div className="grid grid-cols-4 gap-2">
+            {draft.image_urls.map((url, i) => (
+              <div key={url} className="aspect-square">
+                <img
+                  src={url}
+                  alt={`Imagen ${i + 1}`}
+                  className="w-full h-full object-cover rounded border border-gray-200"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div>
         <label className="block text-sm font-medium text-gray-600 mb-1">
